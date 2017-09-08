@@ -1,10 +1,9 @@
+// Simple node.js RSA encrypt by Jeneser
+// -------------------------------
+
 // Copyright (c) 2017  Jeneser
 // All Rights Reserved.
 // See "LICENSE" for details.
-
-// Simple node.js RSA encrypt
-
-'use strict';
 
 // jsbn.js by Tom Wu
 // -------------------------------
@@ -21,9 +20,9 @@ var dbits;
 // (public) Constructor
 function BigInteger(a, b, c) {
   if (a !== null)
-    if ("number" === typeof a) this.fromNumber(a, b, c);
-    else if (b === undefined && "string" !== typeof a) this.fromString(a, 256);
-  else this.fromString(a, b);
+    if ('number' === typeof a) this.fromNumber(a, b, c);
+    else if (b === undefined && 'string' !== typeof a) this.fromString(a, 256);
+    else this.fromString(a, b);
 }
 
 // return new, unset BigInteger
@@ -51,8 +50,8 @@ BigInteger.prototype.am = am3;
 dbits = 28;
 
 BigInteger.prototype.DB = dbits;
-BigInteger.prototype.DM = ((1 << dbits) - 1);
-BigInteger.prototype.DV = (1 << dbits);
+BigInteger.prototype.DM = (1 << dbits) - 1;
+BigInteger.prototype.DV = 1 << dbits;
 
 var BI_FP = 52;
 BigInteger.prototype.FV = Math.pow(2, BI_FP);
@@ -60,14 +59,14 @@ BigInteger.prototype.F1 = BI_FP - dbits;
 BigInteger.prototype.F2 = 2 * dbits - BI_FP;
 
 // Digit conversions
-var BI_RM = "0123456789abcdefghijklmnopqrstuvwxyz";
+var BI_RM = '0123456789abcdefghijklmnopqrstuvwxyz';
 var BI_RC = new Array();
 var rr, vv;
-rr = "0".charCodeAt(0);
+rr = '0'.charCodeAt(0);
 for (vv = 0; vv <= 9; ++vv) BI_RC[rr++] = vv;
-rr = "a".charCodeAt(0);
+rr = 'a'.charCodeAt(0);
 for (vv = 10; vv < 36; ++vv) BI_RC[rr++] = vv;
-rr = "A".charCodeAt(0);
+rr = 'A'.charCodeAt(0);
 for (vv = 10; vv < 36; ++vv) BI_RC[rr++] = vv;
 
 function int2char(n) {
@@ -76,7 +75,7 @@ function int2char(n) {
 
 function intAt(s, i) {
   var c = BI_RC[s.charCodeAt(i)];
-  return (c === null) ? -1 : c;
+  return c === null ? -1 : c;
 }
 
 // (protected) copy this to r
@@ -89,7 +88,7 @@ function bnpCopyTo(r) {
 // (protected) set from integer value x, -DV <= x < DV
 function bnpFromInt(x) {
   this.t = 1;
-  this.s = (x < 0) ? -1 : 0;
+  this.s = x < 0 ? -1 : 0;
   if (x > 0) this[0] = x;
   else if (x < -1) this[0] = x + this.DV;
   else this.t = 0;
@@ -107,8 +106,10 @@ function bnpFromString(s, b) {
   var k;
   if (b === 16) k = 4;
   else if (b === 8) k = 3;
-  else if (b === 256) k = 8; // byte array
-  else if (b === 2) k = 1;
+  else if (b === 256) k = 8;
+  else if (b === 2)
+    // byte array
+    k = 1;
   else if (b === 32) k = 5;
   else if (b === 4) k = 2;
   else {
@@ -121,19 +122,17 @@ function bnpFromString(s, b) {
     mi = false,
     sh = 0;
   while (--i >= 0) {
-    var x = (k === 8) ? s[i] & 0xff : intAt(s, i);
+    var x = k === 8 ? s[i] & 0xff : intAt(s, i);
     if (x < 0) {
-      if (s.charAt(i) === "-") mi = true;
+      if (s.charAt(i) === '-') mi = true;
       continue;
     }
     mi = false;
-    if (sh === 0)
-      this[this.t++] = x;
+    if (sh === 0) this[this.t++] = x;
     else if (sh + k > this.DB) {
       this[this.t - 1] |= (x & ((1 << (this.DB - sh)) - 1)) << sh;
-      this[this.t++] = (x >> (this.DB - sh));
-    } else
-      this[this.t - 1] |= x << sh;
+      this[this.t++] = x >> (this.DB - sh);
+    } else this[this.t - 1] |= x << sh;
     sh += k;
     if (sh >= this.DB) sh -= this.DB;
   }
@@ -153,7 +152,7 @@ function bnpClamp() {
 
 // (public) return string representation in given radix
 function bnToString(b) {
-  if (this.s < 0) return "-" + this.negate().toString(b);
+  if (this.s < 0) return '-' + this.negate().toString(b);
   var k;
   if (b === 16) k = 4;
   else if (b === 8) k = 3;
@@ -162,8 +161,9 @@ function bnToString(b) {
   else if (b === 4) k = 2;
   else return this.toRadix(b);
   var km = (1 << k) - 1,
-    d, m = false,
-    r = "",
+    d,
+    m = false,
+    r = '',
     i = this.t;
   var p = this.DB - (i * this.DB) % k;
   if (i-- > 0) {
@@ -186,7 +186,7 @@ function bnToString(b) {
       if (m) r += int2char(d);
     }
   }
-  return m ? r : "0";
+  return m ? r : '0';
 }
 
 // (public) -this
@@ -198,7 +198,7 @@ function bnNegate() {
 
 // (public) |this|
 function bnAbs() {
-  return (this.s < 0) ? this.negate() : this;
+  return this.s < 0 ? this.negate() : this;
 }
 
 // (public) return + if this > a, - if this < a, 0 if equal
@@ -207,9 +207,8 @@ function bnCompareTo(a) {
   if (r !== 0) return r;
   var i = this.t;
   r = i - a.t;
-  if (r !== 0) return (this.s < 0) ? -r : r;
-  while (--i >= 0)
-    if ((r = this[i] - a[i]) !== 0) return r;
+  if (r !== 0) return this.s < 0 ? -r : r;
+  while (--i >= 0) if ((r = this[i] - a[i]) !== 0) return r;
   return 0;
 }
 
@@ -329,7 +328,7 @@ function bnpSubTo(a, r) {
     }
     c -= a.s;
   }
-  r.s = (c < 0) ? -1 : 0;
+  r.s = c < 0 ? -1 : 0;
   if (c < -1) r[i++] = this.DV + c;
   else if (c > 0) r[i++] = c;
   r.t = i;
@@ -353,12 +352,14 @@ function bnpMultiplyTo(a, r) {
 // (protected) r = this^2, r !== this (HAC 14.16)
 function bnpSquareTo(r) {
   var x = this.abs();
-  var i = r.t = 2 * x.t;
+  var i = (r.t = 2 * x.t);
   while (--i >= 0) r[i] = 0;
   for (i = 0; i < x.t - 1; ++i) {
     var c = x.am(i, x[i], r, 2 * i, 0, 1);
-    if ((r[i + x.t] += x.am(i + 1, 2 * x[i], r, 2 * i + 1, c, x.t - i - 1)) >=
-      x.DV) {
+    if (
+      (r[i + x.t] += x.am(i + 1, 2 * x[i], r, 2 * i + 1, c, x.t - i - 1)) >=
+      x.DV
+    ) {
       r[i + x.t] -= x.DV;
       r[i + x.t + 1] = 1;
     }
@@ -394,13 +395,13 @@ function bnpDivRemTo(m, q, r) {
   var ys = y.t;
   var y0 = y[ys - 1];
   if (y0 === 0) return;
-  var yt = y0 * (1 << this.F1) + ((ys > 1) ? y[ys - 2] >> this.F2 : 0);
+  var yt = y0 * (1 << this.F1) + (ys > 1 ? y[ys - 2] >> this.F2 : 0);
   var d1 = this.FV / yt,
     d2 = (1 << this.F1) / yt,
     e = 1 << this.F2;
   var i = r.t,
     j = i - ys,
-    t = (q === null) ? nbi() : q;
+    t = q === null ? nbi() : q;
   y.dlShiftTo(j, t);
   if (r.compareTo(t) >= 0) {
     r[r.t++] = 1;
@@ -411,9 +412,10 @@ function bnpDivRemTo(m, q, r) {
   while (y.t < ys) y[y.t++] = 0;
   while (--j >= 0) {
     // Estimate quotient digit
-    var qd = (r[--i] === y0) ? this.DM : Math.floor(r[i] * d1 + (r[i - 1] + e) *
-      d2);
-    if ((r[i] += y.am(0, qd, r, j, 0, ys)) < qd) { // Try it out
+    var qd =
+      r[--i] === y0 ? this.DM : Math.floor(r[i] * d1 + (r[i - 1] + e) * d2);
+    if ((r[i] += y.am(0, qd, r, j, 0, ys)) < qd) {
+      // Try it out
       y.dlShiftTo(j, t);
       r.subTo(t, r);
       while (r[i] < --qd) r.subTo(t, r);
@@ -491,9 +493,9 @@ function bnpInvDigit() {
   y = (y * (2 - (((x & 0xffff) * y) & 0xffff))) & 0xffff; // y === 1/x mod 2^16
   // last step - calculate inverse mod DV directly;
   // assumes 16 < DB <= 32 and assumes ability to handle 48-bit ints
-  y = (y * (2 - x * y % this.DV)) % this.DV; // y === 1/x mod 2^dbits
+  y = (y * (2 - (x * y) % this.DV)) % this.DV; // y === 1/x mod 2^dbits
   // we really want the negative inverse, and -DV < y < DV
-  return (y > 0) ? this.DV - y : -y;
+  return y > 0 ? this.DV - y : -y;
 }
 
 // Montgomery reduction
@@ -525,13 +527,17 @@ function montRevert(x) {
 
 // x = x/R mod m (HAC 14.32)
 function montReduce(x) {
-  while (x.t <= this.mt2) // pad x so am has enough room later
+  while (
+    x.t <= this.mt2 // pad x so am has enough room later
+  )
     x[x.t++] = 0;
   for (var i = 0; i < this.m.t; ++i) {
     // faster way of calculating u0 = x[i]*mp mod DV
     var j = x[i] & 0x7fff;
-    var u0 = (j * this.mpl + (((j * this.mph + (x[i] >> 15) * this.mpl) & this.um) <<
-      15)) & x.DM;
+    var u0 =
+      (j * this.mpl +
+        (((j * this.mph + (x[i] >> 15) * this.mpl) & this.um) << 15)) &
+      x.DM;
     // use am to combine the multiply-shift-add into one call
     j = i + this.m.t;
     x[j] += this.m.am(0, u0, x, i, 0, this.m.t);
@@ -566,7 +572,7 @@ Montgomery.prototype.sqrTo = montSqrTo;
 
 // (protected) true iff this is even
 function bnpIsEven() {
-  return ((this.t > 0) ? (this[0] & 1) : this.s) === 0;
+  return (this.t > 0 ? this[0] & 1 : this.s) === 0;
 }
 
 // (protected) this^e, e < 2^32, doing sqr and mul with "r" (HAC 14.79)
@@ -639,8 +645,7 @@ function Arcfour() {
 // Initialize arcfour context from key, an array of ints, each from [0..255]
 function ARC4init(key) {
   var i, j, t;
-  for (i = 0; i < 256; ++i)
-    this.S[i] = i;
+  for (i = 0; i < 256; ++i) this.S[i] = i;
   j = 0;
   for (i = 0; i < 256; ++i) {
     j = (j + this.S[i] + key[i % key.length]) & 255;
@@ -704,10 +709,10 @@ if (rng_pool === undefined) {
   var t;
 
   var z = Math.random(32);
-  for (t = 0; t < z.length; ++t)
-    rng_pool[rng_pptr++] = z.charCodeAt(t) & 255;
+  for (t = 0; t < z.length; ++t) rng_pool[rng_pptr++] = z.charCodeAt(t) & 255;
   // }
-  while (rng_pptr < rng_psize) { // extract some randomness from Math.random()
+  while (rng_pptr < rng_psize) {
+    // extract some randomness from Math.random()
     t = Math.floor(65536 * Math.random());
     rng_pool[rng_pptr++] = t >>> 8;
     rng_pool[rng_pptr++] = t & 255;
@@ -743,7 +748,7 @@ SecureRandom.prototype.nextBytes = rng_get_bytes;
 // -------------------------------
 
 // "empty" RSA key constructor
-var RSAKey = function () {
+var RSAKey = function(KEY, EXP) {
   this.n = null;
   this.e = 0;
   this.d = null;
@@ -752,7 +757,9 @@ var RSAKey = function () {
   this.dmp1 = null;
   this.dmq1 = null;
   this.coeff = null;
-}
+
+  this.setPublic(KEY, EXP);
+};
 
 // convert a (hex) string to a bignum object
 function parseBigInt(str, r) {
@@ -760,25 +767,24 @@ function parseBigInt(str, r) {
 }
 
 function linebrk(s, n) {
-  var ret = "";
+  var ret = '';
   var i = 0;
   while (i + n < s.length) {
-    ret += s.substring(i, i + n) + "\n";
+    ret += s.substring(i, i + n) + '\n';
     i += n;
   }
   return ret + s.substring(i, s.length);
 }
 
 function byte2Hex(b) {
-  if (b < 0x10)
-    return "0" + b.toString(16);
-  else
-    return b.toString(16);
+  if (b < 0x10) return '0' + b.toString(16);
+  else return b.toString(16);
 }
 
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s, n) {
-  if (n < s.length + 11) { // TODO: fix for utf-8
+  if (n < s.length + 11) {
+    // TODO: fix for utf-8
     console.log('Message too long for RSA');
     return null;
   }
@@ -786,9 +792,10 @@ function pkcs1pad2(s, n) {
   var i = s.length - 1;
   while (i >= 0 && n > 0) {
     var c = s.charCodeAt(i--);
-    if (c < 128) { // encode using utf-8
+    if (c < 128) {
+      // encode using utf-8
       ba[--n] = c;
-    } else if ((c > 127) && (c < 2048)) {
+    } else if (c > 127 && c < 2048) {
       ba[--n] = (c & 63) | 128;
       ba[--n] = (c >> 6) | 192;
     } else {
@@ -800,7 +807,8 @@ function pkcs1pad2(s, n) {
   ba[--n] = 0;
   var rng = new SecureRandom();
   var x = new Array();
-  while (n > 2) { // random non-zero pad
+  while (n > 2) {
+    // random non-zero pad
     x[0] = 0;
     while (x[0] === 0) rng.nextBytes(x);
     ba[--n] = x[0];
