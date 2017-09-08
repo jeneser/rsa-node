@@ -1,10 +1,9 @@
-'use strict';
+var rsaNode = require('../src/index');
 
-var assert = require('assert');
-var rsaNode = require('../lib');
+var rsa = new rsaNode();
+var key = 'D41F1B452440585C5D1F853C7CBCB2908CFF324B43A42D7D77D2BB28BD64E2D098079B477D23990E935386FF73CCF865E0D84CE64793306C4083EADECFE36BCC89873EC2BA37D6CA943CB03BA5B4369EE7E31C3539DEA67FF8BF4A5CEE64EB3FD0639E78044B12C7B1D07E86EB7BCF033F78947E0ADE5653B9A88B33AFEB53BD';
+var exp = 65537;
 
-describe('rsa-node', function () {
-  it('should have unit test!', function () {
-    assert(false, 'we expected this package author to add actual unit tests.');
-  });
-});
+rsa.setPublic(key, exp);
+var res = rsa.encrypt('20161218');
+console.log(res);
