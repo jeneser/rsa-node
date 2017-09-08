@@ -1,6 +1,6 @@
 {
   "name": "rsa-node",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Simple node.js RSA encrypt",
   "license": "MIT",
   "files": [
